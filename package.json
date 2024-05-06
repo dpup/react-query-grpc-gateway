@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/dpup/react-query-grpc-gateway.git"
+    "url": "git+https://github.com/dpup/react-query-grpc-gateway.git"
   },
   "homepage": "https://github.com/dpup/react-query-grpc-gateway",
   "keywords": [
