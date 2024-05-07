@@ -1,6 +1,6 @@
 {
   "name": "react-query-grpc-gateway",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "React hook for querying gRPC Gateway endpoints using Tanstack Query.",
   "type": "module",
   "main": "dist/index.js",
