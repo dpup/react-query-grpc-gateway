@@ -1,11 +1,13 @@
 import { createContext, useContext } from 'react';
 import { useQuery, UseQueryOptions, UseQueryResult } from '@tanstack/react-query';
 
+// Note on generic types:
+// - I represents the input type for the service method, or the request.
+// - O represents the output type for the service method, or the response.
+// - M represents the service method itself.
+
 // Represents the static methods from the generated service client.
-export type ServiceMethod<Request extends object = object, Response extends object = object> = (
-  req: Request,
-  initReq: RequestInitWithPathPrefix,
-) => Promise<Response>;
+export type ServiceMethod<I, O> = (req: I, initReq: RequestInitWithPathPrefix) => Promise<O>;
 
 // Extends the standard `RequestInit` accepted by `fetch()` with a `pathPrefix`
 // property that is used by the generated gateway methods to prefix the URL.
@@ -13,19 +15,13 @@ export interface RequestInitWithPathPrefix extends RequestInit {
   pathPrefix?: string;
 }
 
-// Represents the request object for a given service method.
-export type ServiceRequest<E extends ServiceMethod> = Parameters<E>[0];
-
-// Represents the response object for a given service method.
-export type ServiceResponse<E extends ServiceMethod> = ReturnType<E>;
-
 // Represents an error returned by calling a service method.
 export type ServiceError = Error | ErrorResponse;
 
 // Represents a function that handles errors returned from a service method.
-export type OnErrorHandler<E extends ServiceMethod> = (
+export type OnErrorHandler<M extends ServiceMethod<I, O>, I, O> = (
   error: Error | ErrorResponse,
-) => ReturnType<E> | null;
+) => ReturnType<M> | null;
 
 // Represents the standard error response returned from the server.
 export interface ErrorResponse {
@@ -41,26 +37,23 @@ export interface ErrorResponse {
 // `UseQueryOptions` except that `queryFn` is handled internally, so must not
 // be provided. Additionally an `onError` handler can be provided to provide
 // customized error handling.
-type UseServiceQueryOptions<E extends ServiceMethod> = Omit<
-  UseQueryOptions<Awaited<ServiceResponse<E>>, ServiceError>,
+type UseServiceQueryOptions<M extends ServiceMethod<I, O>, I, O> = Omit<
+  UseQueryOptions<Awaited<O>, ServiceError>,
   'queryFn'
 > & {
-  onError?: OnErrorHandler<E>;
+  onError?: OnErrorHandler<M, I, O>;
 };
 
 // Represents the result of calling `useServiceQuery`.
-type UseServiceQueryResult<E extends ServiceMethod> = UseQueryResult<
-  Awaited<ServiceResponse<E>>,
-  ServiceError
->;
+type UseServiceQueryResult<O> = UseQueryResult<Awaited<O>, ServiceError>;
 
 // Wraps `useQuery` from react-query, pulling request configuration from context
 // and making it easier to call generated service clients.
-export function useServiceQuery<E extends ServiceMethod>(
-  method: E,
-  req: ServiceRequest<E>,
-  options?: UseServiceQueryOptions<E>,
-): UseServiceQueryResult<E> {
+export function useServiceQuery<M extends ServiceMethod<I, O>, I, O>(
+  method: M,
+  req: I,
+  options?: UseServiceQueryOptions<M, I, O>,
+): UseServiceQueryResult<O> {
   const reqCtx = useContext(ServiceContext);
   return useQuery({
     ...options!,
@@ -73,9 +66,9 @@ export function useServiceQuery<E extends ServiceMethod>(
         },
       });
       if (options?.onError) {
-        return resp.catch(options.onError) as Promise<Awaited<ServiceResponse<E>>>;
+        return resp.catch(options.onError) as Promise<Awaited<O>>;
       }
-      return resp as Promise<Awaited<ServiceResponse<E>>>;
+      return resp as Promise<Awaited<O>>;
     },
   });
 }

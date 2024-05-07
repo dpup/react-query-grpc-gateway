@@ -5,7 +5,6 @@ import { renderHook, waitFor } from '@testing-library/react';
 import {
   useServiceQuery,
   RequestInitWithPathPrefix,
-  ServiceMethod,
   ServiceContext,
   isErrorResponse,
 } from '../src/index';
@@ -52,12 +51,7 @@ test('basic method call should return expected data', async () => {
   );
 
   const { result } = renderHook(
-    () =>
-      useServiceQuery(
-        FakeService.FakeMethod as ServiceMethod,
-        { id: 1, name: 'Hello' },
-        { queryKey: ['fake'] },
-      ),
+    () => useServiceQuery(FakeService.FakeMethod, { id: 1, name: 'Hello' }, { queryKey: ['fake'] }),
     { wrapper },
   );
 
@@ -80,12 +74,7 @@ test('service context should override request options', async () => {
   );
 
   const { result } = renderHook(
-    () =>
-      useServiceQuery(
-        FakeService.FakeMethod as ServiceMethod,
-        { id: 1, name: 'Hello' },
-        { queryKey: ['fake'] },
-      ),
+    () => useServiceQuery(FakeService.FakeMethod, { id: 1, name: 'Hello' }, { queryKey: ['fake'] }),
     { wrapper },
   );
 
@@ -106,7 +95,7 @@ test('onerror handler should be able to recover from an error', async () => {
   const { result } = renderHook(
     () =>
       useServiceQuery(
-        FakeService.ErrorMethod as ServiceMethod,
+        FakeService.ErrorMethod,
         { id: 1, name: 'Hello' },
         {
           queryKey: ['fake'],
