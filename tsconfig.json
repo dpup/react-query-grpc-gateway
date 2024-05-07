@@ -32,6 +32,6 @@
     "incremental": false, // Disable incremental compilation
     "jsx": "react" // Enable JSX syntax
   },
-  "include": ["src/*"],
+  "include": ["src/*", "tests/*"],
   "exclude": ["node_modules"]
 }

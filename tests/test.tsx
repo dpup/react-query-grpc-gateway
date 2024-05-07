@@ -13,23 +13,28 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PropsWithChildren } from 'react';
 import { FC } from 'react';
 
-type FakeRequest = {
+interface FakeRequest {
   id: number;
   name: string;
-};
+}
 
-type FakeResponse = {
+interface FakeResponse {
   req: FakeRequest;
   initReq?: RequestInitWithPathPrefix;
-};
+}
 
 // Fake gRPC gateway service that satisfies the interface but simply echos back
 // the Request and the RequestInit objects.
 class FakeService {
-  static FakeMethod(req: FakeRequest, initReq?: RequestInitWithPathPrefix): Promise<FakeResponse> {
+  static FakeMethod(
+    this: void,
+    req: FakeRequest,
+    initReq?: RequestInitWithPathPrefix,
+  ): Promise<FakeResponse> {
     return Promise.resolve({ req, initReq });
   }
   static ErrorMethod(
+    this: void,
     _req: FakeRequest,
     _initReq?: RequestInitWithPathPrefix,
   ): Promise<FakeResponse> {
