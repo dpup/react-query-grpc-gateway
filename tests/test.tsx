@@ -57,10 +57,15 @@ test('basic method call should return expected data', async () => {
 
   await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-  expect(result.current.data).toEqual({
-    req: { id: 1, name: 'Hello' },
-    initReq: { headers: { 'Content-Type': 'application/json' } },
-  });
+  if (result.current.data) {
+    expect(result.current.data.req.id).toEqual(1);
+    expect(result.current.data.req.name).toEqual('Hello');
+    expect(result.current.data.initReq).toEqual({
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } else {
+    fail('Expected data to be defined');
+  }
 });
 
 test('service context should override request options', async () => {
@@ -80,10 +85,15 @@ test('service context should override request options', async () => {
 
   await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-  expect(result.current.data).toEqual({
-    req: { id: 1, name: 'Hello' },
-    initReq: { headers: { 'Content-Type': 'application/json', 'X-Custom': 'FooBar' } },
-  });
+  if (result.current.data) {
+    expect(result.current.data.req.id).toEqual(1);
+    expect(result.current.data.req.name).toEqual('Hello');
+    expect(result.current.data.initReq).toEqual({
+      headers: { 'Content-Type': 'application/json', 'X-Custom': 'FooBar' },
+    });
+  } else {
+    fail('Expected data to be defined');
+  }
 });
 
 test('onerror handler should be able to recover from an error', async () => {

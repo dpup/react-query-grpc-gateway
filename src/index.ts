@@ -19,9 +19,7 @@ export interface RequestInitWithPathPrefix extends RequestInit {
 export type ServiceError = Error | ErrorResponse;
 
 // Represents a function that handles errors returned from a service method.
-export type OnErrorHandler<M extends ServiceMethod<I, O>, I, O> = (
-  error: Error | ErrorResponse,
-) => ReturnType<M> | null;
+export type OnErrorHandler<O> = (error: Error | ErrorResponse) => O | null;
 
 // Represents the standard error response returned from the server.
 export interface ErrorResponse {
@@ -37,11 +35,11 @@ export interface ErrorResponse {
 // `UseQueryOptions` except that `queryFn` is handled internally, so must not
 // be provided. Additionally an `onError` handler can be provided to provide
 // customized error handling.
-type UseServiceQueryOptions<M extends ServiceMethod<I, O>, I, O> = Omit<
-  UseQueryOptions<Awaited<O>, ServiceError>,
+type UseServiceQueryOptions<M extends ServiceMethod<Parameters<M>[0], ReturnType<M>>> = Omit<
+  UseQueryOptions<Awaited<ReturnType<M>>, ServiceError>,
   'queryFn'
 > & {
-  onError?: OnErrorHandler<M, I, O>;
+  onError?: OnErrorHandler<ReturnType<M>>;
 };
 
 // Represents the result of calling `useServiceQuery`.
@@ -49,11 +47,11 @@ type UseServiceQueryResult<O> = UseQueryResult<Awaited<O>, ServiceError>;
 
 // Wraps `useQuery` from react-query, pulling request configuration from context
 // and making it easier to call generated service clients.
-export function useServiceQuery<M extends ServiceMethod<I, O>, I, O>(
+export function useServiceQuery<M extends ServiceMethod<Parameters<M>[0], Awaited<ReturnType<M>>>>(
   method: M,
-  req: I,
-  options?: UseServiceQueryOptions<M, I, O>,
-): UseServiceQueryResult<O> {
+  req: Parameters<M>[0],
+  options?: UseServiceQueryOptions<M>,
+): UseServiceQueryResult<ReturnType<M>> {
   const reqCtx = useContext(ServiceContext);
   return useQuery({
     ...options!,
@@ -66,9 +64,9 @@ export function useServiceQuery<M extends ServiceMethod<I, O>, I, O>(
         },
       });
       if (options?.onError) {
-        return resp.catch(options.onError) as Promise<Awaited<O>>;
+        return resp.catch(options.onError) as ReturnType<M>;
       }
-      return resp as Promise<Awaited<O>>;
+      return resp as ReturnType<M>;
     },
   });
 }
