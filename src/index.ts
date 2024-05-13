@@ -1,5 +1,12 @@
 import { createContext, useContext } from 'react';
-import { useQuery, UseQueryOptions, UseQueryResult } from '@tanstack/react-query';
+import {
+  useMutation,
+  UseMutationOptions,
+  UseMutationResult,
+  useQuery,
+  UseQueryOptions,
+  UseQueryResult,
+} from '@tanstack/react-query';
 
 // Note on generic types:
 // - I represents the input type for the service method, or the request.
@@ -42,8 +49,13 @@ type UseServiceQueryOptions<M extends ServiceMethod<Parameters<M>[0], ReturnType
   onError?: OnErrorHandler<ReturnType<M>>;
 };
 
-// Represents the result of calling `useServiceQuery`.
-type UseServiceQueryResult<O> = UseQueryResult<Awaited<O>, ServiceError>;
+// Represents the `useServiceMutation` options. This is the same as
+// `UseMutationOptions` except that `mutationFn` is handled internally, so must
+// not be provided.
+type UseServiceMutationOptions<M extends ServiceMethod<Parameters<M>[0], ReturnType<M>>> = Omit<
+  UseMutationOptions<Awaited<ReturnType<M>>, ServiceError, Parameters<M>[0], unknown>,
+  'mutationFn'
+>;
 
 // Wraps `useQuery` from react-query, pulling request configuration from context
 // and making it easier to call generated service clients.
@@ -51,7 +63,7 @@ export function useServiceQuery<M extends ServiceMethod<Parameters<M>[0], Awaite
   method: M,
   req: Parameters<M>[0],
   options?: UseServiceQueryOptions<M>,
-): UseServiceQueryResult<ReturnType<M>> {
+): UseQueryResult<Awaited<ReturnType<M>>, ServiceError> {
   const reqCtx = useContext(ServiceContext);
   return useQuery({
     ...options!,
@@ -64,9 +76,33 @@ export function useServiceQuery<M extends ServiceMethod<Parameters<M>[0], Awaite
         },
       });
       if (options?.onError) {
-        return resp.catch(options.onError) as ReturnType<M>;
+        return resp.catch(options.onError) as Awaited<ReturnType<M>>;
       }
-      return resp as ReturnType<M>;
+      return resp;
+    },
+  });
+}
+
+// Wraps `useMutation` from react-query, pulling request configuration from
+// context and making it easier to call generated service clients.
+export function useServiceMutation<
+  M extends ServiceMethod<Parameters<M>[0], Awaited<ReturnType<M>>>,
+>(
+  method: M,
+  options?: UseServiceMutationOptions<M>,
+): UseMutationResult<Awaited<ReturnType<M>>, ServiceError> {
+  const reqCtx = useContext(ServiceContext);
+  return useMutation({
+    ...options!,
+    mutationFn: (req) => {
+      const resp = method(req, {
+        ...reqCtx,
+        headers: {
+          'Content-Type': 'application/json',
+          ...reqCtx.headers,
+        },
+      });
+      return resp;
     },
   });
 }
