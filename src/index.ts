@@ -65,14 +65,25 @@ export function useServiceQuery<M extends ServiceMethod<Parameters<M>[0], Awaite
   options?: UseServiceQueryOptions<M>,
 ): UseQueryResult<Awaited<ReturnType<M>>, ServiceError> {
   const reqCtx = useContext(ServiceContext);
-  return useQuery({
+  return useQuery(queryOptions(method, req, reqCtx, options));
+}
+
+// Returns the options object for `useQuery` based on the service method. Can
+// be used with `useSuspenseQuery` for data loading.
+export function queryOptions<M extends ServiceMethod<Parameters<M>[0], Awaited<ReturnType<M>>>>(
+  method: M,
+  req: Parameters<M>[0],
+  reqInit?: RequestInitWithPathPrefix,
+  options?: UseServiceQueryOptions<M>,
+): UseQueryOptions<Awaited<ReturnType<M>>, ServiceError> {
+  return {
     ...options!,
     queryFn: () => {
       const resp = method(req, {
-        ...reqCtx,
+        ...reqInit,
         headers: {
           'Content-Type': 'application/json',
-          ...reqCtx.headers,
+          ...reqInit?.headers,
         },
       });
       if (options?.onError) {
@@ -80,7 +91,7 @@ export function useServiceQuery<M extends ServiceMethod<Parameters<M>[0], Awaite
       }
       return resp;
     },
-  });
+  };
 }
 
 // Wraps `useMutation` from react-query, pulling request configuration from
