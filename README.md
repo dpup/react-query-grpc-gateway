@@ -19,6 +19,12 @@ npm install react-query-grpc-gateway
 
 ## Usage
 
+- [useServiceQuery](#useservicequery)
+- [useServiceMutation](#useservicemutation)
+- [queryOptions](#queryoptions)
+
+### useServiceQuery
+
 `useServiceQuery` is a drop in replacement for `useQuery` that allows for the propagation of request configuration through the context.
 
 Assuming you have a proto definition for a `UserService` with a `ReadUser`
@@ -90,6 +96,21 @@ The arguments for `useServiceQuery` are:
 
 `onError` can be used to customize error handling behavior at the request level,
 for example, don't even show React Query that a 401 occurred.
+
+### useServiceMutation
+
+`useServiceMutation` is a drop in replacement for `useMutation`.
+
+```ts
+const mutation = useServiceMutation(UserService.UpdateUser, {});
+mutation.mutate({ id: userID, name: newName });
+```
+
+### queryOptions
+
+`queryOptions` can be used for consistency if you need to prefetch queries or
+use suspenses. It is only marginally more convenient than using the service
+method directly.
 
 ## Contributing
 
