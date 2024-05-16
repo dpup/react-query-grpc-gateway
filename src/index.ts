@@ -12,6 +12,7 @@ import {
 // - I represents the input type for the service method, or the request.
 // - O represents the output type for the service method, or the response.
 // - M represents the service method itself.
+// - C represents a context.
 
 // Represents the static methods from the generated service client.
 export type ServiceMethod<I, O> = (req: I, initReq: RequestInitWithPathPrefix) => Promise<O>;
@@ -52,8 +53,11 @@ type UseServiceQueryOptions<M extends ServiceMethod<Parameters<M>[0], ReturnType
 // Represents the `useServiceMutation` options. This is the same as
 // `UseMutationOptions` except that `mutationFn` is handled internally, so must
 // not be provided.
-type UseServiceMutationOptions<M extends ServiceMethod<Parameters<M>[0], ReturnType<M>>> = Omit<
-  UseMutationOptions<Awaited<ReturnType<M>>, ServiceError, Parameters<M>[0], unknown>,
+type UseServiceMutationOptions<
+  M extends ServiceMethod<Parameters<M>[0], ReturnType<M>>,
+  C = unknown,
+> = Omit<
+  UseMutationOptions<Awaited<ReturnType<M>>, ServiceError, Parameters<M>[0], C>,
   'mutationFn'
 >;
 
@@ -98,10 +102,11 @@ export function queryOptions<M extends ServiceMethod<Parameters<M>[0], Awaited<R
 // context and making it easier to call generated service clients.
 export function useServiceMutation<
   M extends ServiceMethod<Parameters<M>[0], Awaited<ReturnType<M>>>,
+  C = unknown,
 >(
   method: M,
-  options?: UseServiceMutationOptions<M>,
-): UseMutationResult<Awaited<ReturnType<M>>, ServiceError> {
+  options?: UseServiceMutationOptions<M, C>,
+): UseMutationResult<Awaited<ReturnType<M>>, ServiceError, Partial<Parameters<M>[0]>, C> {
   const reqCtx = useContext(ServiceContext);
   return useMutation({
     ...options!,
