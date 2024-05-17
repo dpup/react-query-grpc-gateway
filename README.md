@@ -78,7 +78,6 @@ const UserProfilePage ({ userID }) => {
   const { isLoading, isError, error, data } = useServiceQuery(
     UserService.ReadUser,
     { id: userID },
-    { queryKey: ['user', userID] },
   );
   if (isLoading) return <LoadingScreen />;
   else if (isError) return <ErrorPage error={error} />;
@@ -111,6 +110,24 @@ mutation.mutate({ id: userID, name: newName });
 `queryOptions` can be used for consistency if you need to prefetch queries or
 use suspenses. It is only marginally more convenient than using the service
 method directly.
+
+```ts
+const reqCtx = useContext(ServiceContext);
+const { data: currentWorkspace } = useSuspenseQuery(
+  queryOptions(UserService.GetUser, { userId }, reqCtx, {
+    staleTime: 60 * 1000,
+  }),
+);
+```
+
+### queryKey
+
+`queryKey` returns a default query key for a service method and request. It is
+provided as a convenience and can be overridden in the options param.
+
+```ts
+await queryClient.invalidateQueries({ queryKey: queryKey(UserService.ListUsers) });
+```
 
 ## Contributing
 

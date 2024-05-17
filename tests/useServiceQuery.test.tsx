@@ -44,14 +44,39 @@ class FakeService {
   }
 }
 
-test('basic method call should return expected data', async () => {
+test('basic service call', async () => {
   const queryClient = new QueryClient();
   const wrapper: FC<PropsWithChildren> = ({ children }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 
   const { result } = renderHook(
-    () => useServiceQuery(FakeService.FakeMethod, { id: 1, name: 'Hello' }, { queryKey: ['fake'] }),
+    () => useServiceQuery(FakeService.FakeMethod, { id: 1, name: 'Hello' }),
+    { wrapper },
+  );
+
+  await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+  if (result.current.data) {
+    expect(result.current.data.req.id).toEqual(1);
+    expect(result.current.data.req.name).toEqual('Hello');
+    expect(result.current.data.initReq).toEqual({
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } else {
+    fail('Expected data to be defined');
+  }
+});
+
+test('service call with custom query key', async () => {
+  const queryClient = new QueryClient();
+  const wrapper: FC<PropsWithChildren> = ({ children }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+
+  const { result } = renderHook(
+    () =>
+      useServiceQuery(FakeService.FakeMethod, { id: 1, name: 'Hello' }, { queryKey: ['mykey', 1] }),
     { wrapper },
   );
 
@@ -79,7 +104,7 @@ test('service context should override request options', async () => {
   );
 
   const { result } = renderHook(
-    () => useServiceQuery(FakeService.FakeMethod, { id: 1, name: 'Hello' }, { queryKey: ['fake'] }),
+    () => useServiceQuery(FakeService.FakeMethod, { id: 1, name: 'Hello' }),
     { wrapper },
   );
 
@@ -108,7 +133,6 @@ test('onerror handler should be able to recover from an error', async () => {
         FakeService.ErrorMethod,
         { id: 1, name: 'Hello' },
         {
-          queryKey: ['fake'],
           onError: (e) => {
             if (isErrorResponse(e) && e.code === 16) {
               return null;

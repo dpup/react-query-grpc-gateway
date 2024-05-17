@@ -3,8 +3,9 @@
 // - O represents the output type for the service method, or the response.
 // - M represents the service method itself.
 // - C represents a context.
+// - Q represents a QueryKey.
 
-import { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
+import { QueryKey, UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
 
 // Represents the static methods from the generated service client.
 export type ServiceMethod<I, O> = (req: I, initReq: RequestInitWithPathPrefix) => Promise<O>;
@@ -33,13 +34,16 @@ export interface ErrorResponse {
 
 // Represents the `useServiceQuery` options. This is the same as
 // `UseQueryOptions` except that `queryFn` is handled internally, so must not
-// be provided. Additionally an `onError` handler can be provided to provide
-// customized error handling.
-export type UseServiceQueryOptions<M extends ServiceMethod<Parameters<M>[0], ReturnType<M>>> = Omit<
-  UseQueryOptions<Awaited<ReturnType<M>>, ServiceError>,
-  'queryFn'
-> & {
+// be provided and `queryKey` becomes optional.
+// Additionally an `onError` handler can be provided to provide customized error
+// handling.
+export type UseServiceQueryOptions<
+  M extends ServiceMethod<Parameters<M>[0], ReturnType<M>>,
+  Q extends QueryKey,
+> = Omit<UseQueryOptions<Awaited<ReturnType<M>>, ServiceError>, 'queryFn' | 'queryKey'> & {
   onError?: OnErrorHandler<ReturnType<M>>;
+} & {
+  queryKey?: Q;
 };
 
 // Represents the `useServiceMutation` options. This is the same as
