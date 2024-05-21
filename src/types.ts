@@ -7,22 +7,24 @@
 
 import { QueryKey, UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
 
-// Represents the static methods from the generated service client.
+/** Represents the static methods from the generated service client. */
 export type ServiceMethod<I, O> = (req: I, initReq: RequestInitWithPathPrefix) => Promise<O>;
 
-// Extends the standard `RequestInit` accepted by `fetch()` with a `pathPrefix`
-// property that is used by the generated gateway methods to prefix the URL.
+/**
+ * Extends the standard `RequestInit` accepted by `fetch()` with a `pathPrefix`
+ *property that is used by the generated gateway methods to prefix the URL.
+ */
 export interface RequestInitWithPathPrefix extends RequestInit {
   pathPrefix?: string;
 }
 
-// Represents an error returned by calling a service method.
+/** Represents an error returned by calling a service method. */
 export type ServiceError = Error | ErrorResponse;
 
-// Represents a function that handles errors returned from a service method.
+/** Represents a function that handles errors returned from a service method. */
 export type OnErrorHandler<O> = (error: Error | ErrorResponse) => O | null;
 
-// Represents the standard error response returned from the server.
+/** Represents the standard error response returned from the server. */
 export interface ErrorResponse {
   // Non-standard, but a useful customization. Could be typed as `Code` from
   // google/rpc/code.pb.
@@ -32,11 +34,13 @@ export interface ErrorResponse {
   details: unknown[];
 }
 
-// Represents the `useServiceQuery` options. This is the same as
-// `UseQueryOptions` except that `queryFn` is handled internally, so must not
-// be provided and `queryKey` becomes optional.
-// Additionally an `onError` handler can be provided to provide customized error
-// handling.
+/**
+ * Represents the `useServiceQuery` options. This is the same as
+ * `UseQueryOptions` except that `queryFn` is handled internally, so must not
+ * be provided and `queryKey` becomes optional.
+ * Additionally an `onError` handler can be provided to provide customized error
+ * handling.
+ */
 export type UseServiceQueryOptions<
   M extends ServiceMethod<Parameters<M>[0], ReturnType<M>>,
   Q extends QueryKey,
@@ -46,9 +50,10 @@ export type UseServiceQueryOptions<
   queryKey?: Q;
 };
 
-// Represents the `useServiceMutation` options. This is the same as
-// `UseMutationOptions` except that `mutationFn` is handled internally, so must
-// not be provided.
+/** Represents the `useServiceMutation` options. This is the same as
+ * `UseMutationOptions` except that `mutationFn` is handled internally, so must
+ * not be provided.
+ */
 export type UseServiceMutationOptions<
   M extends ServiceMethod<Parameters<M>[0], ReturnType<M>>,
   C = unknown,
@@ -57,7 +62,7 @@ export type UseServiceMutationOptions<
   'mutationFn'
 >;
 
-// Returns true if the error is an error response.
+/** Returns true if the error is an error response. */
 export function isErrorResponse(error: Error | ErrorResponse): error is ErrorResponse {
   return (error as ErrorResponse).code !== undefined;
 }

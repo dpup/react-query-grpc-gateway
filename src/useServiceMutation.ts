@@ -1,11 +1,12 @@
-// Wraps `useMutation` from react-query, pulling request configuration from
-
 import { UseMutationResult, useMutation } from '@tanstack/react-query';
 import { useContext } from 'react';
 import { ServiceContext } from '.';
 import { ServiceMethod, UseServiceMutationOptions, ServiceError } from './types';
 
-// context and making it easier to call generated service clients.
+/**
+ * Wraps `useMutation` from react-query, pulling request configuration from
+ * Context and making it easier to call generated service clients.
+ */
 export function useServiceMutation<
   M extends ServiceMethod<Parameters<M>[0], Awaited<ReturnType<M>>>,
   C = unknown,

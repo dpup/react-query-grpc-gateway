@@ -9,8 +9,10 @@ import {
 } from './types';
 import { queryKey } from './queryKey';
 
-// Wraps `useQuery` from react-query, pulling request configuration from context
-// and making it easier to call generated service clients.
+/**
+ *  Wraps `useQuery` from react-query, pulling request configuration from context
+ * and making it easier to call generated service clients.
+ */
 export function useServiceQuery<
   M extends ServiceMethod<Parameters<M>[0], Awaited<ReturnType<M>>>,
   Q extends QueryKey,
@@ -23,8 +25,10 @@ export function useServiceQuery<
   return useQuery(queryOptions(method, req, reqCtx, options));
 }
 
-// Returns the options object for `useQuery` based on the service method. Can
-// be used with `useSuspenseQuery` for data loading.
+/**
+ * Returns the options object for `useQuery` based on the service method. Can
+ * be used with `useSuspenseQuery` for data loading.
+ */
 export function queryOptions<
   M extends ServiceMethod<Parameters<M>[0], Awaited<ReturnType<M>>>,
   Q extends QueryKey,
