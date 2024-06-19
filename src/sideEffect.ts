@@ -31,11 +31,13 @@ export interface SideEffectOptions<TSourceReq, TSourceResp, TTargetReq, TTargetR
   updateFn?: (oldData: TTargetResp, result: TSourceResp) => TTargetResp;
 
   /**
-   * If true, the target query will be invalidated on mutation. This is useful
-   * if there are known side-effects but the response from the source query does
-   * not capture them.
+   * If specified, the target query will be invalidated on mutation. This is
+   * useful if there are known side-effects but the response from the source
+   * query does not capture them. 'true' will trigger the default refetch
+   * behavior of 'active', while 'active', 'inactive', 'all', and 'none' can be
+   * used to specify other behaviors per `invalidateQueries`.
    */
-  invalidate?: boolean;
+  invalidate?: boolean | 'active' | 'inactive' | 'all' | 'none';
 }
 
 type SideEffectContext = Record<string, unknown>;
@@ -75,7 +77,7 @@ export interface SideEffectHandlers<TSourceReq, TSourceResp> {
  *         }),
  *         sideEffect(listUsers, {
  *           mapKey: ({ workspaceId }) => workspaceId,
- *           invalidate:true,
+ *           invalidate: true,
  *         }),
  *       ),
  *     });
@@ -103,7 +105,12 @@ export function sideEffect<TSourceReq, TSourceResp, TTargetReq, TTargetResp>(
       if (update) {
         queryClient.setQueryData(key, (oldData: TTargetResp) => update(oldData, result));
       }
-      if (invalidate) await queryClient.invalidateQueries({ queryKey: key });
+      if (invalidate) {
+        await queryClient.invalidateQueries({
+          queryKey: key,
+          refetchType: typeof invalidate == 'string' ? invalidate : 'active',
+        });
+      }
     },
     onError: (_error: ServiceError, req: TSourceReq, context: SideEffectContext) => {
       const key = queryKey(m as any, mapKey ? mapKey(req) : undefined);
