@@ -36,8 +36,9 @@ export interface SideEffectOptions<TSourceReq, TSourceResp, TTargetReq, TTargetR
    * query does not capture them. 'true' will trigger the default refetch
    * behavior of 'active', while 'active', 'inactive', 'all', and 'none' can be
    * used to specify other behaviors per `invalidateQueries`.
+   * 'remove' will simply remove the query from the cache.
    */
-  invalidate?: boolean | 'active' | 'inactive' | 'all' | 'none';
+  invalidate?: boolean | 'active' | 'inactive' | 'all' | 'remove' | 'none';
 }
 
 type SideEffectContext = Record<string, unknown>;
@@ -105,7 +106,9 @@ export function sideEffect<TSourceReq, TSourceResp, TTargetReq, TTargetResp>(
       if (update) {
         queryClient.setQueryData(key, (oldData: TTargetResp) => update(oldData, result));
       }
-      if (invalidate) {
+      if (invalidate === 'remove') {
+        await queryClient.removeQueries({ queryKey: key });
+      } else if (invalidate) {
         await queryClient.invalidateQueries({
           queryKey: key,
           refetchType: typeof invalidate == 'string' ? invalidate : 'active',
