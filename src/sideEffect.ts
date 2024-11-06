@@ -107,7 +107,7 @@ export function sideEffect<TSourceReq, TSourceResp, TTargetReq, TTargetResp>(
         queryClient.setQueryData(key, (oldData: TTargetResp) => update(oldData, result));
       }
       if (invalidate === 'remove') {
-        await queryClient.removeQueries({ queryKey: key });
+        queryClient.removeQueries({ queryKey: key });
       } else if (invalidate) {
         await queryClient.invalidateQueries({
           queryKey: key,

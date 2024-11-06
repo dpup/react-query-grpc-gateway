@@ -1,4 +1,4 @@
-import { UseQueryResult, useQuery, UseQueryOptions, QueryKey } from '@tanstack/react-query';
+import { UseQueryResult, useQuery, QueryKey, UseSuspenseQueryOptions } from '@tanstack/react-query';
 import { useContext } from 'react';
 import { ServiceContext } from '.';
 import {
@@ -37,7 +37,7 @@ export function queryOptions<
   req: Parameters<M>[0],
   reqInit?: RequestInitWithPathPrefix,
   options?: UseServiceQueryOptions<M, Q>,
-): UseQueryOptions<Awaited<ReturnType<M>>, ServiceError> {
+): UseSuspenseQueryOptions<Awaited<ReturnType<M>>, ServiceError> {
   return {
     ...options,
     queryKey: options?.queryKey ?? queryKey(method, req),
